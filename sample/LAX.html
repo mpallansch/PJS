@@ -3,7 +3,7 @@
 	<head>
 		<title>Simulation Final Project</title>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-		<script src="js/simulation.js"></script>
+		<script src="../lib/simulation.js"></script>
 		<script>
 			window.addEventListener('load',function(){
 				var canvas = document.getElementById('canvas');
@@ -21,21 +21,21 @@
 				redlight.src = 'img/redlight.png';
 				plane.src = 'img/plane.png';
 
-				var queue = [
-						new Event(2, departure, 1),
-						new Event(5, departure, 1)	
-					];
-			
 				var sim = new Simulation(
-					'ATL',
+					'LAX',
 					'http://localhost:8124/', 
 					{
 						runwayFree: true,
-						onTheGround: 2,
+						onTheGround: 4,
 						inTheAir: 0,
 						time: 0
 					}, 
-					queue, 
+					[
+						new Event(1, departure, 'ATL'),
+						new Event(4, departure, 'ATL'),
+						new Event(11, departure, 'CHI'),
+						new Event(12, departure, 'ATL')
+					], 
 					function(state){
 						ctx.textAlign = 'center';
 						ctx.font = '20pt Arial';
@@ -74,6 +74,7 @@
 						}
 						return state;
 					}
+
 
 					state.inTheAir++;
 					if(state.runwayFree){

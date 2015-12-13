@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Simulation Final Project</title>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+		<script src="../lib/simulation.js"></script>
+		<script>
+			window.addEventListener('load',function(){
+				var canvas = document.getElementById('canvas');
+				var ctx = canvas.getContext('2d');
+
+				canvas.width = document.body.clientWidth;
+				canvas.height = document.body.clientHeight;
+
+				var runway = new Image();
+				var greenlight = new Image();
+				var redlight = new Image();
+				var plane = new Image();
+				runway.src = 'img/runway.jpg';
+				greenlight.src = 'img/greenlight.png';
+				redlight.src = 'img/redlight.png';
+				plane.src = 'img/plane.png';
+
+				var queue = [
+						new Event(1, departure, 'ATL'),
+						new Event(6, departure, 'LAX'),
+						new Event(8, departure, 'LAX'),
+						new Event(20, departure, 'LAX'),
+						new Event(27, departure, 'ATL')	
+					];
+			
+				var sim = new Simulation(
+					'CHI',
+					'http://localhost:8124/', 
+					{
+						runwayFree: true,
+						onTheGround: 5,
+						inTheAir: 0,
+						time: 0
+					}, 
+					queue, 
+					function(state){
+						ctx.textAlign = 'center';
+						ctx.font = '20pt Arial';
+						ctx.clearRect(0, 0, canvas.width, canvas.height);
+						ctx.drawImage(runway, 0, 0, canvas.width, canvas.height);
+						if(state.runwayFree){
+							ctx.drawImage(greenlight, canvas.width - 200, canvas.height - 75, 200, 75);
+						} else {
+							ctx.drawImage(redlight, canvas.width - 200, canvas.height - 75, 200, 75);
+						}
+						for(var i = 0; i < state.onTheGround; i++){
+							ctx.drawImage(plane, canvas.width / 20 + (i * 30), canvas.height / 2 + (i * 10), 320, 160);
+						}
+						for(i = 0; i < state.inTheAir; i++){
+							ctx.drawImage(plane, canvas.width / 2 + (i * 30), (i * 10), 320, 160);
+						}
+						ctx.fillText('Time: ' + state.time, 50, 50);
+					}
+				);	
+
+				function departure(event, state){
+					state.onTheGround--;
+					event.scheduleEvent(sim, new Event(state.time + 5, arrival, event.destination));
+					return state;
+				}
+
+				function arrival(event, state){
+
+					function landing(event, state){
+						state.inTheAir--;
+						state.onTheGround++;
+						if(state.inTheAir > 0){
+							event.scheduleEvent(sim, new Event(state.time + 5, landing));
+						} else {
+							state.runwayFree = true;
+						}
+						return state;
+					}
+
+					state.inTheAir++;
+					if(state.runwayFree){
+						state.runwayFree = false;
+						event.scheduleEvent(sim, new Event(state.time + 5, landing));
+					}
+					return state;
+				}
+
+				window.addEventListener('resize', function(){
+					canvas.width = document.body.clientWidth;
+					canvas.height = document.body.clientHeight;
+				});
+			});		
+		</script>
+		<style>
+			html, body {
+				width: 100%;
+				height: 100%;
+			}
+
+			body {
+				margin: 0;
+				overflow: hidden;
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="canvas"></canvas>
+	</body>
+</html>

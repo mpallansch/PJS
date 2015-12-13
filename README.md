@@ -1,1 +1,1 @@
-Parallel JavaScript Simulation Engine
+For this project, I chose to create a Parallel Javascript Simulation engine, called I have called PJs Engine. 
